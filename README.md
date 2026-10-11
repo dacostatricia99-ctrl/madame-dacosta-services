@@ -3,7 +3,7 @@
 Deux espaces :
 
 - **Espace candidat** (`index.html`)
-- **Espace administrateur** (`admin.html`)
+- **Tableau de bord administrateur** (`admin.html`)
 
 ## Espace candidat
 
@@ -17,10 +17,17 @@ Deux espaces :
 
 Le client peut revenir en arrière à tout moment et chaque erreur est expliquée simplement.
 
-## Espace administrateur
+## Tableau de bord administrateur
 
-Accessible via le lien « Espace administrateur » en haut de la page d'accueil (code de démonstration : `admin1234`).
+Accessible via le lien « Tableau de bord (admin) » en haut de la page d'accueil. On s'y connecte avec une adresse e-mail administrateur ; à la première connexion, l'admin choisit son mot de passe.
 
+Les adresses admin sont listées dans `admin.js` (constante `ADMINS`) sous forme d'empreinte SHA-256, pour ne pas les publier en clair. Pour en ajouter une :
+
+```sh
+echo -n "adresse@exemple.fr" | sha256sum
+```
+
+- **Statistiques** : nombre d'employeurs, de candidats et de nouveaux comptes sur 7 jours.
 - **Créer un employeur** : entreprise, secteur, responsable, e-mail, téléphone, ville et mot de passe provisoire à transmettre à l'employeur.
 - **Voir les comptes** : liste des employeurs et des candidats.
 
@@ -36,4 +43,4 @@ python3 -m http.server 8000
 
 puis allez sur http://localhost:8000.
 
-> Démonstration : les comptes sont enregistrés dans le navigateur (`localStorage`), mot de passe haché en SHA-256. Le code administrateur est vérifié dans le navigateur, il ne protège donc rien réellement. Pour un vrai service, il faudra un serveur et une base de données.
+> Démonstration : les comptes sont enregistrés dans le navigateur (`localStorage`), mot de passe haché en SHA-256. La connexion administrateur est vérifiée dans le navigateur, il ne protège donc rien réellement. Pour un vrai service, il faudra un serveur et une base de données.

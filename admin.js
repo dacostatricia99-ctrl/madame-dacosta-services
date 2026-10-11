@@ -1,8 +1,12 @@
-// Espace administrateur : création des comptes employeurs et consultation des comptes.
+// Tableau de bord administrateur : création des comptes employeurs et consultation des comptes.
 (function () {
-  // Empreinte SHA-256 du code d'accès de démonstration « admin1234 ».
+  // Empreintes SHA-256 (en minuscules) des adresses e-mail administrateur, pour ne pas les publier en clair.
+  // Pour ajouter un admin : echo -n "adresse@exemple.fr" | sha256sum
   // Ce contrôle se fait dans le navigateur : il ne protège rien tant qu'il n'y a pas de serveur.
-  const CODE_ADMIN = 'ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270';
+  const ADMINS = [
+    '84e19b65e4d5cc081577bad931e7f86d4295c2f90b282af64b9138dea06e0011'
+  ];
+  const MOTS_DE_PASSE = 'mds-admins';
   const SESSION = 'mds-admin-connecte';
 
   const connexion = document.getElementById('connexion');
@@ -10,28 +14,80 @@
   const formEmployeur = document.getElementById('form-employeur');
   const msgEmployeur = document.getElementById('msg-employeur');
 
-  function estConnecte() {
-    try { return sessionStorage.getItem(SESSION) === 'oui'; } catch { return false; }
+  function adminConnecte() {
+    try { return sessionStorage.getItem(SESSION); } catch { return null; }
+  }
+
+  function lireMotsDePasse() {
+    try { return JSON.parse(localStorage.getItem(MOTS_DE_PASSE)) || {}; } catch { return {}; }
   }
 
   function afficher() {
-    const ok = estConnecte();
-    connexion.classList.toggle('cache', ok);
-    espace.classList.toggle('cache', !ok);
-    if (ok) afficherComptes();
+    const email = adminConnecte();
+    connexion.classList.toggle('cache', !!email);
+    espace.classList.toggle('cache', !email);
+    if (email) {
+      document.getElementById('admin-connecte').textContent = email;
+      afficherComptes();
+    }
   }
+
+  const champEmail = document.getElementById('email-admin');
+  const champMdp = document.getElementById('mdp-admin');
+  const champConfirmation = document.getElementById('mdp-confirmation');
+  const msgConnexion = document.getElementById('msg-connexion');
+
+  // À la première connexion d'un admin, on lui fait choisir son mot de passe.
+  async function premiereConnexion(email) {
+    const cle = await MDS.empreinte(email);
+    return ADMINS.includes(cle) && !lireMotsDePasse()[cle];
+  }
+
+  async function adapterFormulaire() {
+    msgConnexion.textContent = '';
+    const premiere = await premiereConnexion(champEmail.value.trim().toLowerCase());
+    document.getElementById('bloc-confirmation').classList.toggle('cache', !premiere);
+    document.getElementById('aide-connexion').classList.toggle('cache', !premiere);
+    champConfirmation.required = premiere;
+    champMdp.autocomplete = premiere ? 'new-password' : 'current-password';
+    document.getElementById('bouton-connexion').textContent = premiere ? 'Créer mon mot de passe' : 'Se connecter';
+  }
+  champEmail.addEventListener('change', adapterFormulaire);
 
   document.getElementById('form-connexion').addEventListener('submit', async e => {
     e.preventDefault();
-    const champ = document.getElementById('code');
-    if (await MDS.empreinte(champ.value) === CODE_ADMIN) {
-      try { sessionStorage.setItem(SESSION, 'oui'); } catch { /* stockage indisponible */ }
-      champ.value = '';
-      document.getElementById('msg-connexion').textContent = '';
-      afficher();
-    } else {
-      document.getElementById('msg-connexion').textContent = "Code d'accès incorrect.";
+    const email = champEmail.value.trim().toLowerCase();
+    const cle = await MDS.empreinte(email);
+    if (!ADMINS.includes(cle)) {
+      msgConnexion.textContent = "Cette adresse n'a pas d'accès administrateur.";
+      return;
     }
+    const motsDePasse = lireMotsDePasse();
+    const empreinteMdp = await MDS.empreinte(champMdp.value);
+    if (!motsDePasse[cle]) {
+      if (!MDS.motDePasseValide(champMdp.value)) {
+        msgConnexion.textContent = 'Le mot de passe doit faire au moins 8 caractères avec une lettre et un chiffre.';
+        return;
+      }
+      if (!champConfirmation.value) {
+        await adapterFormulaire();
+        msgConnexion.textContent = 'Première connexion : confirmez votre mot de passe.';
+        return;
+      }
+      if (champMdp.value !== champConfirmation.value) {
+        msgConnexion.textContent = 'Les deux mots de passe ne correspondent pas.';
+        return;
+      }
+      motsDePasse[cle] = empreinteMdp;
+      try { localStorage.setItem(MOTS_DE_PASSE, JSON.stringify(motsDePasse)); } catch { /* stockage indisponible */ }
+    } else if (motsDePasse[cle] !== empreinteMdp) {
+      msgConnexion.textContent = 'Mot de passe incorrect.';
+      return;
+    }
+    try { sessionStorage.setItem(SESSION, email); } catch { /* stockage indisponible */ }
+    e.target.reset();
+    msgConnexion.textContent = '';
+    afficher();
   });
 
   document.getElementById('deconnexion').addEventListener('click', () => {
@@ -79,11 +135,12 @@
       ville: d.ville,
       motDePasse: await MDS.empreinte(d.motDePasse),
       creeLe: new Date().toISOString(),
-      creePar: 'admin'
+      creePar: adminConnecte()
     });
     msgEmployeur.textContent = `Le compte employeur « ${d.entreprise} » a été créé. ` +
       `Communiquez à ${d.responsable} son identifiant (${d.email.toLowerCase()}) et son mot de passe provisoire.`;
     formEmployeur.reset();
+    afficherComptes();
   });
 
   function tableau(conteneur, lignes, colonnes) {
@@ -113,7 +170,15 @@
   const date = iso => new Date(iso).toLocaleDateString('fr-FR');
 
   function afficherComptes() {
-    tableau(document.getElementById('liste-employeurs'), MDS.lire('employeurs'), [
+    const employeurs = MDS.lire('employeurs');
+    const candidats = MDS.lire('candidats');
+    const ilYaSeptJours = Date.now() - 7 * 24 * 3600 * 1000;
+    document.getElementById('nb-employeurs').textContent = employeurs.length;
+    document.getElementById('nb-candidats').textContent = candidats.length;
+    document.getElementById('nb-semaine').textContent =
+      [...employeurs, ...candidats].filter(c => new Date(c.creeLe) >= ilYaSeptJours).length;
+
+    tableau(document.getElementById('liste-employeurs'), employeurs, [
       ['Entreprise', e => e.entreprise],
       ['Secteur', e => e.secteur],
       ['Responsable', e => e.responsable],
@@ -122,7 +187,7 @@
       ['Ville', e => e.ville],
       ['Créé le', e => date(e.creeLe)]
     ]);
-    tableau(document.getElementById('liste-candidats'), MDS.lire('candidats'), [
+    tableau(document.getElementById('liste-candidats'), candidats, [
       ['Nom', c => `${c.prenom} ${c.nom}`],
       ['E-mail', c => c.email],
       ['Téléphone', c => c.telephone],

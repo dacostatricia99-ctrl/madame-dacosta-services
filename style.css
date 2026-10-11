@@ -63,3 +63,8 @@ nav a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: .9em; }
 th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; white-space: nowrap; }
 .vide { color: #666; font-style: italic; }
+
+.bienvenue { margin: 0 0 12px; text-align: center; }
+.statistiques { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { text-align: center; font-size: .85em; color: #666; padding: 12px 8px; }
+.stat span { display: block; font-size: 1.8em; font-weight: bold; color: var(--accent); }
