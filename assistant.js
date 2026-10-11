@@ -1,7 +1,5 @@
-// Awa, conseillère virtuelle : guide le client étape par étape pour créer son compte.
+// Awa, conseillère virtuelle : guide le candidat étape par étape pour créer son compte.
 (function () {
-  const STOCKAGE = 'mds-comptes';
-
   const etapes = [
     {
       champ: 'prenom',
@@ -20,8 +18,8 @@
       question: 'Quelle est votre adresse e-mail ? Elle vous servira à vous connecter.',
       type: 'email', autocomplete: 'email',
       valider: v => {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Cette adresse ne semble pas valide. Exemple : marie.dupont@gmail.com';
-        if (lireComptes().some(c => c.email === v.toLowerCase())) return 'Un compte existe déjà avec cette adresse. Essayez une autre adresse.';
+        if (!MDS.EMAIL_VALIDE.test(v)) return 'Cette adresse ne semble pas valide. Exemple : marie.dupont@gmail.com';
+        if (MDS.emailDejaUtilise(v)) return 'Un compte existe déjà avec cette adresse. Essayez une autre adresse.';
         return true;
       },
       normaliser: v => v.toLowerCase()
@@ -30,13 +28,13 @@
       champ: 'telephone',
       question: 'Votre numéro de téléphone, pour que nous puissions vous joindre ?',
       type: 'tel', autocomplete: 'tel',
-      valider: v => v.replace(/[\s.\-()]/g, '').match(/^\+?\d{8,15}$/) ? true : 'Le numéro doit contenir entre 8 et 15 chiffres.'
+      valider: v => MDS.telephoneValide(v) || 'Le numéro doit contenir entre 8 et 15 chiffres.'
     },
     {
       champ: 'motDePasse',
       question: 'Choisissez un mot de passe : au moins 8 caractères, avec une lettre et un chiffre.',
       type: 'password', autocomplete: 'new-password', masque: true,
-      valider: v => (v.length >= 8 && /[a-zA-Z]/.test(v) && /\d/.test(v)) ||
+      valider: v => MDS.motDePasseValide(v) ||
         'Le mot de passe doit faire au moins 8 caractères et contenir une lettre et un chiffre.'
     },
     {
@@ -54,21 +52,6 @@
 
   let client = {};
   let index = 0;
-
-  function lireComptes() {
-    try { return JSON.parse(localStorage.getItem(STOCKAGE)) || []; } catch { return []; }
-  }
-
-  function enregistrerCompte(compte) {
-    const comptes = lireComptes();
-    comptes.push(compte);
-    try { localStorage.setItem(STOCKAGE, JSON.stringify(comptes)); } catch { /* stockage indisponible */ }
-  }
-
-  async function empreinte(texte) {
-    const octets = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texte));
-    return Array.from(new Uint8Array(octets), o => o.toString(16).padStart(2, '0')).join('');
-  }
 
   function dire(texte, auteur = 'employe', erreur = false) {
     const bulle = document.createElement('div');
@@ -138,12 +121,13 @@
 
   async function creerCompte() {
     actions.innerHTML = '';
-    enregistrerCompte({
+    MDS.ajouter('candidats', {
+      type: 'candidat',
       prenom: client.prenom,
       nom: client.nom,
       email: client.email,
       telephone: client.telephone,
-      motDePasse: await empreinte(client.motDePasse),
+      motDePasse: await MDS.empreinte(client.motDePasse),
       creeLe: new Date().toISOString()
     });
     dire(`Votre compte est créé, ${client.prenom} ! 🎉\nVous pouvez maintenant vous connecter avec ${client.email}.\nN'hésitez pas si vous avez besoin d'autre chose.`);
@@ -158,6 +142,6 @@
     poserQuestion();
   }
 
-  dire("Bonjour, je suis Awa, conseillère chez Madame Dacosta Services. 👋\nJe vais vous aider à créer votre compte client, étape par étape. Cela prend environ 2 minutes.");
+  dire("Bonjour, je suis Awa, conseillère chez Madame Dacosta Services. 👋\nJe vais vous aider à créer votre compte candidat, étape par étape. Cela prend environ 2 minutes.");
   poserQuestion();
 })();

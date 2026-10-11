@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espace administrateur</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Madame Dacosta Services</h1>
+    <p>Espace administrateur</p>
+    <nav><a href="index.html">← Retour à l'espace candidat</a></nav>
+  </header>
+
+  <main>
+    <section id="connexion" class="carte">
+      <h2>Connexion administrateur</h2>
+      <form id="form-connexion" class="formulaire">
+        <label>Code d'accès
+          <input id="code" type="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Se connecter</button>
+        <p id="msg-connexion" class="message erreur" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <div id="espace" class="cache">
+      <div class="onglets" role="tablist">
+        <button type="button" role="tab" data-onglet="employeur" aria-selected="true">Créer un employeur</button>
+        <button type="button" role="tab" data-onglet="comptes" aria-selected="false">Voir les comptes</button>
+        <button type="button" id="deconnexion" class="secondaire">Se déconnecter</button>
+      </div>
+
+      <section id="onglet-employeur" class="carte">
+        <h2>Nouveau compte employeur</h2>
+        <form id="form-employeur" class="formulaire" novalidate>
+          <label>Nom de l'entreprise
+            <input name="entreprise" required autocomplete="organization">
+          </label>
+          <label>Secteur d'activité
+            <select name="secteur" required>
+              <option value="">— Choisir —</option>
+              <option>Aide à domicile</option>
+              <option>Ménage et entretien</option>
+              <option>Garde d'enfants</option>
+              <option>Restauration</option>
+              <option>Commerce</option>
+              <option>BTP</option>
+              <option>Santé</option>
+              <option>Autre</option>
+            </select>
+          </label>
+          <label>Nom du responsable
+            <input name="responsable" required autocomplete="name">
+          </label>
+          <label>E-mail
+            <input name="email" type="email" required autocomplete="email">
+          </label>
+          <label>Téléphone
+            <input name="telephone" type="tel" required autocomplete="tel">
+          </label>
+          <label>Ville
+            <input name="ville" required autocomplete="address-level2">
+          </label>
+          <label>Mot de passe provisoire
+            <input name="motDePasse" type="text" required autocomplete="off">
+          </label>
+          <button type="submit">Créer l'employeur</button>
+          <p id="msg-employeur" class="message" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section id="onglet-comptes" class="cache">
+        <div class="carte">
+          <h2>Employeurs</h2>
+          <div class="tableau" id="liste-employeurs"></div>
+        </div>
+        <div class="carte">
+          <h2>Candidats</h2>
+          <div class="tableau" id="liste-candidats"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <small>Démonstration : les comptes sont enregistrés uniquement dans ce navigateur.</small>
+  </footer>
+
+  <script src="commun.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

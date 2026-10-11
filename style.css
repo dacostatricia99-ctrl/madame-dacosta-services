@@ -44,3 +44,22 @@ button {
 button.secondaire { background: #eee; color: var(--texte); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .cache { display: none; }
+
+nav { margin-top: 8px; }
+nav a { color: var(--accent); }
+.carte { background: var(--carte); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 16px; margin-bottom: 16px; }
+.carte h2 { margin-top: 0; font-size: 1.2em; color: var(--accent); }
+.formulaire { display: grid; gap: 12px; }
+.formulaire label { display: grid; gap: 4px; font-weight: 600; }
+.formulaire input, .formulaire select {
+  padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; font-weight: normal; width: 100%;
+}
+.message { margin: 0; }
+.message.erreur { color: var(--erreur); }
+.message.succes { color: #1b7a3a; }
+.onglets { display: flex; gap: 8px; margin-bottom: 16px; }
+.onglets button[aria-selected="false"] { background: #eee; color: var(--texte); }
+.tableau { width: 100%; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9em; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; white-space: nowrap; }
+.vide { color: #666; font-style: italic; }
