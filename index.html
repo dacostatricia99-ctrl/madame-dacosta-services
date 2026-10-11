@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Madame Dacosta Services</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Madame Dacosta Services</h1>
+    <p>Créez votre compte client en quelques minutes, avec l'aide de notre conseillère.</p>
+  </header>
+
+  <main>
+    <section class="assistant" aria-live="polite">
+      <div class="employe">
+        <div class="avatar" aria-hidden="true">A</div>
+        <div>
+          <strong>Awa</strong>
+          <span class="role">Conseillère clientèle — création de comptes</span>
+        </div>
+      </div>
+      <div id="conversation" class="conversation"></div>
+      <form id="saisie" class="saisie" autocomplete="on">
+        <input id="reponse" type="text" required>
+        <button type="submit">Envoyer</button>
+      </form>
+      <div id="actions" class="actions"></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Démonstration : les comptes sont enregistrés uniquement dans ce navigateur.</small>
+  </footer>
+
+  <script src="assistant.js"></script>
+</body>
+</html>
